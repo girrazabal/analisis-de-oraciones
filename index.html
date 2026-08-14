@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detectives de Oraciones | 4to Grado</title>
+<meta name="description" content="Juego interactivo de análisis sintáctico para cuarto grado: sujeto, predicado, núcleos, oraciones bimembres y unimembres.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#182848;
+    --navy-deep:#0f1a30;
+    --cork:#c9a24b;
+    --cork-dark:#a9812f;
+    --paper:#f3ecd8;
+    --paper-line:#d9cba0;
+    --ink:#1c1c1c;
+    --red-string:#c23b32;
+    --stamp-green:#2f7d4f;
+    --stamp-red:#b23a2f;
+    --gold:#e7b93d;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    font-family:'Nunito',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 10%, #223460 0%, transparent 45%),
+      radial-gradient(circle at 85% 85%, #1a2a50 0%, transparent 40%),
+      var(--navy);
+    background-attachment:fixed;
+    padding:24px 16px 60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .board{
+    width:100%;
+    max-width:760px;
+  }
+  header.topbar{
+    text-align:center;
+    color:var(--paper);
+    margin-bottom:22px;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--gold);
+    color:var(--navy-deep);
+    font-family:'Courier Prime',monospace;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.08em;
+    padding:5px 12px;
+    border-radius:999px;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Special Elite',cursive;
+    font-size:clamp(28px,6vw,42px);
+    margin:0 0 6px;
+    letter-spacing:.02em;
+    text-shadow:0 3px 0 rgba(0,0,0,.3);
+  }
+  header.topbar p{
+    margin:0;
+    opacity:.75;
+    font-size:15px;
+  }
+
+  /* ---- Cards (corkboard index cards) ---- */
+  .card{
+    background:var(--paper);
+    background-image:
+      repeating-linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--paper-line) 28px);
+    border-radius:6px;
+    box-shadow:var(--shadow);
+    padding:26px 24px 24px;
+    position:relative;
+    border:1px solid rgba(0,0,0,.15);
+  }
+  .card::before{
+    content:'';
+    position:absolute;
+    top:-14px; left:50%;
+    transform:translateX(-50%) rotate(-3deg);
+    width:34px; height:34px;
+    background:radial-gradient(circle at 35% 30%, #ff8a7a, var(--red-string) 70%);
+    border-radius:50%;
+    box-shadow:0 4px 6px rgba(0,0,0,.4);
+  }
+
+  /* ---- Start screen ---- */
+  .intro-card p{
+    font-size:16px;
+    line-height:1.6;
+    margin:0 0 12px;
+  }
+  .intro-card ul{
+    margin:0 0 18px;
+    padding-left:22px;
+    line-height:1.7;
+  }
+  .rules-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:10px;
+    margin:16px 0 20px;
+  }
+  .rule-chip{
+    background:#fff;
+    border:1px dashed var(--cork-dark);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:13px;
+    font-weight:700;
+    text-align:center;
+    color:var(--navy-deep);
+  }
+
+  button{
+    font-family:'Nunito',sans-serif;
+    cursor:pointer;
+    border:none;
+  }
+  .btn-primary{
+    display:block;
+    width:100%;
+    background:var(--red-string);
+    color:#fff;
+    font-weight:900;
+    font-size:18px;
+    padding:16px;
+    border-radius:10px;
+    box-shadow:0 6px 0 #8a291f;
+    transition:transform .08s ease;
+    letter-spacing:.02em;
+  }
+  .btn-primary:active{transform:translateY(4px);box-shadow:0 2px 0 #8a291f;}
+  .btn-secondary{
+    display:block;
+    margin:14px auto 0;
+    background:transparent;
+    color:var(--paper);
+    text-decoration:underline;
+    font-weight:700;
+    font-size:14px;
+    opacity:.85;
+  }
+
+  /* ---- Quiz screen ---- */
+  .progress-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+    color:var(--paper);
+    font-family:'Courier Prime',monospace;
+    font-size:13px;
+  }
+  .progress-bar{
+    height:8px;
+    background:rgba(255,255,255,.15);
+    border-radius:99px;
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--gold);
+    transition:width .3s ease;
+  }
+  .case-label{
+    font-family:'Courier Prime',monospace;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--cork-dark);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .sentence-box{
+    font-family:'Special Elite',cursive;
+    font-size:clamp(19px,4.4vw,25px);
+    line-height:1.5;
+    background:#fff;
+    border:2px solid var(--navy);
+    border-radius:6px;
+    padding:16px 18px;
+    margin:10px 0 18px;
+  }
+  .question-text{
+    font-weight:800;
+    font-size:16px;
+    margin-bottom:14px;
+    color:var(--navy-deep);
+  }
+  .options{
+    display:grid;
+    gap:10px;
+  }
+  .option-btn{
+    background:#fff;
+    border:2px solid #d8cba3;
+    border-radius:8px;
+    padding:13px 14px;
+    text-align:left;
+    font-size:15px;
+    font-weight:700;
+    color:var(--navy-deep);
+    transition:all .12s ease;
+    position:relative;
+  }
+  .option-btn:hover:not(:disabled){
+    border-color:var(--navy);
+    background:#fbf7ea;
+  }
+  .option-btn:disabled{cursor:default;}
+  .option-btn.correct{
+    background:#e4f5ea;
+    border-color:var(--stamp-green);
+    color:#1e5c38;
+  }
+  .option-btn.incorrect{
+    background:#fbe6e3;
+    border-color:var(--stamp-red);
+    color:#7c261c;
+  }
+
+  .feedback{
+    margin-top:16px;
+    padding:14px 16px;
+    border-radius:8px;
+    font-size:14.5px;
+    line-height:1.55;
+    display:none;
+    animation:fadein .25s ease;
+  }
+  .feedback.show{display:block;}
+  .feedback.ok{background:#e4f5ea;border:2px solid var(--stamp-green);color:#1e5c38;}
+  .feedback.bad{background:#fbe6e3;border:2px solid var(--stamp-red);color:#7c261c;}
+  .feedback strong{display:block;font-family:'Special Elite',cursive;font-size:15px;margin-bottom:4px;letter-spacing:.03em;}
+
+  .stamp{
+    position:absolute;
+    top:6px; right:14px;
+    font-family:'Special Elite',cursive;
+    font-size:15px;
+    padding:5px 12px;
+    border:3px solid currentColor;
+    border-radius:6px;
+    transform:rotate(8deg);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    opacity:0;
+  }
+  .stamp.show{opacity:1;animation:stampIn .35s cubic-bezier(.2,1.4,.4,1);}
+  .stamp.ok{color:var(--stamp-green);}
+  .stamp.bad{color:var(--stamp-red);}
+  @keyframes stampIn{
+    0%{opacity:0;transform:rotate(8deg) scale(2.4);}
+    60%{opacity:1;}
+    100%{opacity:1;transform:rotate(8deg) scale(1);}
+  }
+  @keyframes fadein{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+
+  .next-btn{
+    margin-top:16px;
+    width:100%;
+    background:var(--navy);
+    color:#fff;
+    font-weight:800;
+    font-size:15px;
+    padding:13px;
+    border-radius:8px;
+    box-shadow:0 5px 0 var(--navy-deep);
+    display:none;
+  }
+  .next-btn.show{display:block;}
+  .next-btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--navy-deep);}
+
+  /* ---- End screen ---- */
+  .folder{
+    text-align:center;
+  }
+  .folder-tab{
+    display:inline-block;
+    background:var(--navy);
+    color:var(--gold);
+    font-family:'Courier Prime',monospace;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:6px 16px;
+    border-radius:6px 6px 0 0;
+    margin-bottom:-2px;
+    position:relative;
+    z-index:2;
+  }
+  .grade-stamp{
+    width:150px;height:150px;
+    margin:14px auto 8px;
+    border:6px solid currentColor;
+    border-radius:50%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    transform:rotate(-8deg);
+    font-family:'Special Elite',cursive;
+  }
+  .grade-stamp .num{font-size:46px;line-height:1;font-weight:700;}
+  .grade-stamp .lbl{font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin-top:4px;}
+  .grade-stamp.ok{color:var(--stamp-green);}
+  .grade-stamp.bad{color:var(--stamp-red);}
+  .end-msg{
+    font-size:16px;
+    font-weight:700;
+    margin:6px 0 22px;
+    color:var(--navy-deep);
+  }
+  .review-title{
+    font-family:'Special Elite',cursive;
+    font-size:16px;
+    margin:22px 0 10px;
+    color:var(--navy-deep);
+    text-align:left;
+  }
+  .review-item{
+    text-align:left;
+    background:#fff;
+    border-left:4px solid var(--stamp-red);
+    border-radius:0 6px 6px 0;
+    padding:10px 14px;
+    margin-bottom:10px;
+    font-size:13.5px;
+    line-height:1.5;
+  }
+  .review-item .rq{font-weight:800;color:var(--navy-deep);}
+  .review-item .rs{font-family:'Courier Prime',monospace;font-size:12.5px;color:#555;margin:3px 0 5px;}
+  .no-errors{
+    text-align:left;
+    background:#e4f5ea;
+    border-left:4px solid var(--stamp-green);
+    padding:12px 14px;
+    border-radius:0 6px 6px 0;
+    font-weight:700;
+    color:#1e5c38;
+  }
+
+  .hidden{display:none !important;}
+
+  footer{
+    color:rgba(255,255,255,.4);
+    font-size:12px;
+    margin-top:26px;
+    text-align:center;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001s !important; transition-duration:0.001s !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="board">
+  <header class="topbar">
+    <span class="badge">🔍 Agencia de Gramática</span>
+    <h1>Detectives de Oraciones</h1>
+    <p>Análisis sintáctico · 4to grado · Sujeto, predicado y núcleos</p>
+  </header>
+
+  <!-- PANTALLA DE INICIO -->
+  <section id="pantalla-inicio" class="card intro-card">
+    <p><strong>Bienvenido/a, detective.</strong> Tu misión es investigar 10 oraciones tomadas al azar de nuestro archivo de 100 casos. En cada una vas a tener que descubrir una pista distinta:</p>
+    <ul>
+      <li>Si la oración es <strong>bimembre o unimembre</strong></li>
+      <li>Cuál es el <strong>sujeto</strong> y cuál el <strong>predicado</strong></li>
+      <li>Cuál es el <strong>núcleo</strong> de cada uno</li>
+      <li>Si el sujeto es <strong>expreso o tácito</strong></li>
+      <li>Si el sujeto es <strong>simple o compuesto</strong></li>
+      <li>Si el predicado es <strong>verbal o no verbal</strong></li>
+      <li>Si el predicado es <strong>simple o compuesto</strong></li>
+    </ul>
+    <div class="rules-grid">
+      <div class="rule-chip">📋 10 casos por partida</div>
+      <div class="rule-chip">🎯 Nota de 1 a 10</div>
+      <div class="rule-chip">✅ 7 o más = Aprobado</div>
+      <div class="rule-chip">💡 Explicación en cada pista</div>
+    </div>
+    <p>Cada acierto suma un punto a tu expediente final. ¡Prestá atención a las explicaciones, incluso cuando te equivoques — ahí está la clave del caso!</p>
+    <button class="btn-primary" id="btn-empezar">Comenzar investigación 🔎</button>
+  </section>
+
+  <!-- PANTALLA DE JUEGO -->
+  <section id="pantalla-juego" class="hidden">
+    <div class="progress-row">
+      <span id="txt-caso">Caso 1 / 10</span>
+      <span id="txt-puntos">Aciertos: 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="barra-progreso" style="width:0%"></div></div>
+
+    <div class="card">
+      <div class="stamp" id="stamp"></div>
+      <div class="case-label" id="lbl-expediente">Expediente N° 001</div>
+      <div class="sentence-box" id="txt-oracion"></div>
+      <div class="question-text" id="txt-pregunta"></div>
+      <div class="options" id="cont-opciones"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="btn-siguiente">Siguiente pista →</button>
+    </div>
+  </section>
+
+  <!-- PANTALLA FINAL -->
+  <section id="pantalla-final" class="hidden">
+    <div class="card folder">
+      <div class="folder-tab">Expediente cerrado</div>
+      <div class="grade-stamp" id="grade-stamp">
+        <span class="num" id="grade-num">0</span>
+        <span class="lbl" id="grade-lbl">--</span>
+      </div>
+      <p class="end-msg" id="end-msg"></p>
+      <button class="btn-primary" id="btn-reintentar">Nueva investigación 🔁</button>
+
+      <div id="cont-revision"></div>
+    </div>
+  </section>
+
+  <footer>Recursos didácticos · Lengua · Cuarto grado</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     1. BANCO DE 100 ORACIONES
+     80 bimembres (generadas combinando sujetos y predicados
+     en 3ra persona singular, siempre concordantes) +
+     20 unimembres (verbos impersonales / de clima / "hay").
+  ========================================================== */
+
+  /* ---------------------------------------------------------
+     A) Bimembres "clásicas": sujeto expreso simple + predicado
+        verbal simple. Cada par sujeto-predicado fue elegido a
+        mano para que tenga sentido (un río no lee, un auto no
+        estudia, etc.).
+  --------------------------------------------------------- */
+  var CLASICAS = [
+    ["El niño",        "niño",        "lee un libro",              "lee"],
+    ["La niña",        "niña",        "pinta un dibujo",           "pinta"],
+    ["Mi hermano",     "hermano",     "estudia matemática",        "estudia"],
+    ["Mi hermana",     "hermana",     "canta una canción",         "canta"],
+    ["La maestra",     "maestra",     "explica la lección",        "explica"],
+    ["El maestro",     "maestro",     "corrige los cuadernos",     "corrige"],
+    ["Mi abuela",      "abuela",      "cocina una torta",          "cocina"],
+    ["Mi abuelo",      "abuelo",      "riega las plantas",         "riega"],
+    ["Mi mamá",        "mamá",        "prepara la cena",           "prepara"],
+    ["Mi papá",        "papá",        "arregla la bicicleta",      "arregla"],
+    ["Mi amigo Juan",  "amigo",       "juega al fútbol",           "juega"],
+    ["Mi amiga Sofía", "amiga",       "baila con alegría",         "baila"],
+    ["El panadero",    "panadero",    "hornea el pan",             "hornea"],
+    ["La doctora",     "doctora",     "cuida a los pacientes",     "cuida"],
+    ["El bombero",     "bombero",     "apaga el incendio",         "apaga"],
+    ["La cantante",    "cantante",    "ensaya una canción nueva",  "ensaya"],
+    ["El futbolista",  "futbolista",  "patea la pelota",           "patea"],
+    ["La bailarina",   "bailarina",   "practica todos los días",   "practica"],
+    ["Mi vecina",      "vecina",      "riega su jardín",           "riega"],
+    ["El cartero",     "cartero",     "reparte las cartas",        "reparte"],
+    ["El niño",        "niño",        "guarda sus juguetes",       "guarda"],
+    ["La niña",        "niña",        "sonríe siempre",            "sonríe"],
+    ["Mi hermano",     "hermano",     "escribe una carta",         "escribe"],
+    ["Mi mamá",        "mamá",        "abre la puerta",            "abre"],
+    ["El perro",       "perro",       "corre por el patio",        "corre"],
+    ["El gato negro",  "gato",        "duerme toda la tarde",      "duerme"],
+    ["El caballo blanco","caballo",   "salta la tranquera",        "salta"],
+    ["El pájaro",      "pájaro",      "vuela muy alto",            "vuela"],
+    ["El delfín",      "delfín",      "nada en el mar",            "nada"],
+    ["La tortuga",     "tortuga",     "camina despacio",           "camina"],
+    ["El león",        "león",        "ruge en la selva",          "ruge"],
+    ["El conejo",      "conejo",      "salta entre las plantas",   "salta"],
+    ["El sol",         "sol",         "brilla en el cielo",        "brilla"],
+    ["La luna",        "luna",        "ilumina la noche",          "ilumina"],
+    ["El río",         "río",         "corre entre las piedras",   "corre"],
+    ["La lluvia",      "lluvia",      "moja las calles",           "moja"],
+    ["La flor amarilla","flor",       "crece en el jardín",        "crece"],
+    ["El árbol grande","árbol",       "da mucha sombra",           "da"],
+    ["El auto rojo",   "auto",        "llega a la estación",       "llega"],
+    ["El tren",        "tren",        "parte muy temprano",        "parte"]
+  ].map(function(a){
+    return {
+      texto: a[0] + " " + a[2] + ".",
+      tipo: "bimembre",
+      sujeto: a[0], nucleoSujeto: a[1], sujetoTipo: "expreso", sujetoNum: "simple",
+      predicado: a[2], nucleoPredicado: a[3], predicadoTipo: "verbal", predicadoNum: "simple"
+    };
+  });
+
+  /* ---------------------------------------------------------
+     B) Sujeto tácito: la oración es bimembre, pero el sujeto
+        no aparece escrito (se deduce por la terminación verbal).
+  --------------------------------------------------------- */
+  var TACITAS = [
+    ["Estudio para el examen de mañana.",     "Estudio"],
+    ["Jugamos al fútbol en el recreo.",       "Jugamos"],
+    ["Corrieron toda la tarde en la plaza.",  "Corrieron"],
+    ["Leo un cuento antes de dormir.",        "Leo"],
+    ["Cantamos el himno todos los lunes.",    "Cantamos"],
+    ["Pintó un mural en la escuela.",         "Pintó"],
+    ["Comimos frutas frescas en el recreo.",  "Comimos"],
+    ["Escribiste una carta muy linda.",       "Escribiste"],
+    ["Bailaron toda la noche en la fiesta.",  "Bailaron"],
+    ["Guardé mis juguetes antes de cenar.",   "Guardé"]
+  ].map(function(a){
+    var predicado = a[0].slice(0, -1); // sin el punto final
+    return {
+      texto: a[0],
+      tipo: "bimembre",
+      sujeto: null, nucleoSujeto: null, sujetoTipo: "tácito", sujetoNum: null,
+      predicado: predicado, nucleoPredicado: a[1], predicadoTipo: "verbal", predicadoNum: "simple"
+    };
+  });
+
+  /* ---------------------------------------------------------
+     C) Sujeto compuesto: dos núcleos unidos por "y".
+  --------------------------------------------------------- */
+  var SUJ_COMPUESTO = [
+    ["El perro y el gato",        "perro y gato",        "juegan en el patio",       "juegan"],
+    ["Mi mamá y mi papá",         "mamá y papá",          "cocinan la cena",          "cocinan"],
+    ["La maestra y los alumnos",  "maestra y alumnos",    "preparan la muestra",      "preparan"],
+    ["El sol y la luna",          "sol y luna",           "comparten el cielo",       "comparten"],
+    ["Mi hermano y mi hermana",   "hermano y hermana",    "estudian juntos",          "estudian"],
+    ["El león y el tigre",        "león y tigre",         "viven en la selva",        "viven"],
+    ["La bailarina y el cantante","bailarina y cantante", "ensayan la obra",          "ensayan"],
+    ["Mi abuela y mi abuelo",     "abuela y abuelo",      "caminan por la plaza",     "caminan"],
+    ["El pájaro y la mariposa",   "pájaro y mariposa",    "vuelan alto",              "vuelan"],
+    ["Los alumnos y la directora","alumnos y directora",  "organizan el acto",        "organizan"]
+  ].map(function(a){
+    return {
+      texto: a[0] + " " + a[2] + ".",
+      tipo: "bimembre",
+      sujeto: a[0], nucleoSujeto: a[1], sujetoTipo: "expreso", sujetoNum: "compuesto",
+      predicado: a[2], nucleoPredicado: a[3], predicadoTipo: "verbal", predicadoNum: "simple"
+    };
+  });
+
+  /* ---------------------------------------------------------
+     D) Predicado compuesto: dos verbos conjugados unidos por "y".
+  --------------------------------------------------------- */
+  var PRED_COMPUESTO = [
+    ["El niño",       "niño",       "corre y salta en el patio",       "corre y salta"],
+    ["Mi hermana",    "hermana",    "canta y baila en la fiesta",      "canta y baila"],
+    ["La maestra",    "maestra",    "explica y corrige los ejercicios","explica y corrige"],
+    ["El gato",       "gato",       "come y duerme todo el día",       "come y duerme"],
+    ["Mi papá",       "papá",       "lee y escribe todas las noches",  "lee y escribe"],
+    ["El futbolista", "futbolista", "corre y patea la pelota",         "corre y patea"],
+    ["La lluvia",     "lluvia",     "cae y moja las calles",           "cae y moja"],
+    ["Mi abuela",     "abuela",     "cocina y limpia la casa",         "cocina y limpia"],
+    ["El pájaro",     "pájaro",     "canta y vuela por el jardín",     "canta y vuela"],
+    ["Los alumnos",   "alumnos",    "escuchan y responden las preguntas","escuchan y responden"]
+  ].map(function(a){
+    return {
+      texto: a[0] + " " + a[2] + ".",
+      tipo: "bimembre",
+      sujeto: a[0], nucleoSujeto: a[1], sujetoTipo: "expreso", sujetoNum: "simple",
+      predicado: a[2], nucleoPredicado: a[3], predicadoTipo: "verbal", predicadoNum: "compuesto"
+    };
+  });
+
+  /* ---------------------------------------------------------
+     E) Predicado no verbal: no tiene verbo conjugado, solo
+        describe o califica al sujeto.
+  --------------------------------------------------------- */
+  var PRED_NOVERBAL = [
+    ["Mi hermano",      "hermano", "muy responsable"],
+    ["La tarea",        "tarea",   "bastante difícil"],
+    ["El campeón",      "campeón", "orgulloso de su equipo"],
+    ["Mi abuela",       "abuela",  "siempre alegre"],
+    ["El auto nuevo",   "auto",    "muy veloz"],
+    ["La maestra",      "maestra", "paciente con todos"],
+    ["Mi amigo Juan",   "amigo",   "un gran compañero"],
+    ["El río",          "río",     "tranquilo esta mañana"],
+    ["La flor amarilla","flor",    "hermosa y delicada"],
+    ["El equipo",       "equipo",  "listo para el partido"]
+  ].map(function(a){
+    return {
+      texto: a[0] + ", " + a[2] + ".",
+      tipo: "bimembre",
+      sujeto: a[0], nucleoSujeto: a[1], sujetoTipo: "expreso", sujetoNum: "simple",
+      predicado: a[2], nucleoPredicado: null, predicadoTipo: "no verbal", predicadoNum: "simple"
+    };
+  });
+
+  /* ---------------------------------------------------------
+     F) Unimembres: no se pueden dividir en sujeto y predicado.
+  --------------------------------------------------------- */
+  var UNIMEMBRES = [
+    "Llueve mucho hoy.",
+    "Hace mucho frío en invierno.",
+    "Anochece muy temprano en junio.",
+    "Truena fuerte en la sierra.",
+    "Nieva en la montaña.",
+    "Hay muchas estrellas esta noche.",
+    "Amanece despacio en el campo.",
+    "Relampaguea sobre el río.",
+    "Hace calor en el verano.",
+    "Anoche tronó toda la noche.",
+    "Hay pan fresco en la mesa.",
+    "Nevó toda la semana pasada.",
+    "Hace viento en la costa.",
+    "Hay flores en el jardín.",
+    "Está nublado esta mañana.",
+    "Aquí huele a pan recién horneado.",
+    "Hace un frío tremendo hoy.",
+    "Llovizna despacio sobre el pueblo.",
+    "Hay silencio en la biblioteca.",
+    "Amaneció despejado y fresco."
+  ].map(function(t){
+    return { texto: t, tipo: "unimembre" };
+  });
+
+  var BANCO = [].concat(CLASICAS, TACITAS, SUJ_COMPUESTO, PRED_COMPUESTO, PRED_NOVERBAL, UNIMEMBRES); // 100 oraciones
+
+  /* =========================================================
+     2. UTILIDADES
+  ========================================================== */
+
+  function mezclar(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  var RELLENO = ["el sol brilla","la maestra juega","corre por el patio","mi abuela","el gato","canta"];
+
+  function opcionesUnicas(candidatas, correcta, cantidad){
+    var set = [];
+    function agregar(v){
+      if (v && set.indexOf(v) === -1) set.push(v);
+    }
+    agregar(correcta);
+    for (var i = 0; i < candidatas.length && set.length < cantidad; i++) agregar(candidatas[i]);
+    var ri = 0;
+    while (set.length < cantidad && ri < RELLENO.length){
+      agregar(RELLENO[ri]); ri++;
+    }
+    return mezclar(set);
+  }
+
+  function otraBimembre(excluirTexto, requiere){
+    var pool = BANCO.filter(function(s){
+      if (s.tipo !== "bimembre" || s.texto === excluirTexto) return false;
+      if (requiere === "sujeto" && !s.sujeto) return false;
+      if (requiere === "nucleoPredicado" && !s.nucleoPredicado) return false;
+      return true;
+    });
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  /* =========================================================
+     3. GENERACIÓN DE PREGUNTAS
+     Según los datos de cada oración, se arma la lista de tipos
+     de pregunta posibles y se elige uno al azar.
+  ========================================================== */
+
+  function tiposDisponibles(oracion){
+    if (oracion.tipo === "unimembre") return ["tipo"];
+
+    var tipos = ["tipo", "predicado", "sujetoExpresoTacito", "predicadoVerbalNoVerbal", "predicadoSimpleCompuesto"];
+    if (oracion.sujeto){
+      tipos.push("sujeto", "nucleoSujeto", "sujetoSimpleCompuesto");
+    }
+    if (oracion.nucleoPredicado){
+      tipos.push("nucleoPredicado");
+    }
+    return tipos;
+  }
+
+  function generarPregunta(oracion){
+    var tipos = tiposDisponibles(oracion);
+    var tipoPregunta = tipos[Math.floor(Math.random() * tipos.length)];
+    var pregunta = { oracion: oracion, tipo: tipoPregunta };
+
+    if (tipoPregunta === "tipo"){
+      pregunta.texto = "¿Esta oración es bimembre o unimembre?";
+      pregunta.correcta = oracion.tipo === "bimembre" ? "Bimembre" : "Unimembre";
+      pregunta.opciones = mezclar(["Bimembre","Unimembre"]);
+      pregunta.explicacion = oracion.tipo === "bimembre"
+        ? "Es bimembre porque tiene predicado (\u201c" + oracion.predicado + "\u201d) y sujeto, aunque a veces el sujeto no se escriba (tácito)."
+        : "Es unimembre porque no se puede separar en sujeto y predicado: no hay nadie que \u201chaga\u201d la acción (verbos de clima como llover, nevar, o construcciones con \u201chay\u201d).";
+      return pregunta;
+    }
+
+    if (tipoPregunta === "sujeto"){
+      var otraS = otraBimembre(oracion.texto, "sujeto");
+      pregunta.texto = "¿Cuál es el SUJETO de esta oración?";
+      pregunta.correcta = oracion.sujeto;
+      pregunta.opciones = opcionesUnicas([oracion.predicado, otraS.sujeto, oracion.texto.replace(/[.,]/g,"")], oracion.sujeto, 4);
+      pregunta.explicacion = "El sujeto es \u201c" + oracion.sujeto + "\u201d: es de quién o de qué se habla en la oración.";
+      return pregunta;
+    }
+
+    if (tipoPregunta === "predicado"){
+      var otraP = otraBimembre(oracion.texto, "sujeto");
+      var sujetoParaOpcion = oracion.sujeto || "No tiene sujeto expreso";
+      pregunta.texto = "¿Cuál es el PREDICADO de esta oración?";
+      pregunta.correcta = oracion.predicado;
+      pregunta.opciones = opcionesUnicas([sujetoParaOpcion, otraP.predicado, oracion.texto.replace(/[.,]/g,"")], oracion.predicado, 4);
+      pregunta.explicacion = "El predicado es \u201c" + oracion.predicado + "\u201d: cuenta qué hace o cómo es el sujeto.";
+      return pregunta;
+    }
+
+    if (tipoPregunta === "nucleoSujeto"){
+      var otraNS = otraBimembre(oracion.texto, "sujeto");
+      var palabrasSuj = oracion.sujeto.split(" ").filter(function(w){
+        var wl = w.toLowerCase();
+        return wl !== oracion.nucleoSujeto.toLowerCase() && ["el","la","los","las","mi","y"].indexOf(wl) === -1;
+      });
+      pregunta.texto = "¿Cuál es el NÚCLEO DEL SUJETO?";
+      pregunta.correcta = oracion.nucleoSujeto;
+      pregunta.opciones = opcionesUnicas([oracion.nucleoPredicado, palabrasSuj[0], otraNS.nucleoSujeto], oracion.nucleoSujeto, 4);
+      pregunta.explicacion = oracion.sujetoNum === "compuesto"
+        ? "El núcleo del sujeto es \u201c" + oracion.nucleoSujeto + "\u201d: como el sujeto es compuesto, tiene dos núcleos unidos por \u201cy\u201d."
+        : "El núcleo del sujeto es \u201c" + oracion.nucleoSujeto + "\u201d: la palabra principal del sujeto, casi siempre un sustantivo.";
+      return pregunta;
+    }
+
+    if (tipoPregunta === "nucleoPredicado"){
+      var otraNP = otraBimembre(oracion.texto, "nucleoPredicado");
+      var palabrasPred = oracion.predicado.split(" ").filter(function(w){
+        return w.toLowerCase() !== oracion.nucleoPredicado.toLowerCase() && w.toLowerCase() !== "y";
+      });
+      pregunta.texto = "¿Cuál es el NÚCLEO DEL PREDICADO?";
+      pregunta.correcta = oracion.nucleoPredicado;
+      pregunta.opciones = opcionesUnicas([oracion.nucleoSujeto, palabrasPred[0], otraNP.nucleoPredicado], oracion.nucleoPredicado, 4);
+      pregunta.explicacion = oracion.predicadoNum === "compuesto"
+        ? "El núcleo del predicado es \u201c" + oracion.nucleoPredicado + "\u201d: como el predicado es compuesto, tiene dos verbos conjugados."
+        : "El núcleo del predicado es \u201c" + oracion.nucleoPredicado + "\u201d: el verbo conjugado, la palabra principal del predicado.";
+      return pregunta;
+    }
+
+    if (tipoPregunta === "sujetoExpresoTacito"){
+      pregunta.texto = "¿El sujeto de esta oración es expreso o tácito?";
+      pregunta.correcta = oracion.sujetoTipo === "expreso" ? "Expreso" : "Tácito";
+      pregunta.opciones = mezclar(["Expreso","Tácito"]);
+      pregunta.explicacion = oracion.sujetoTipo === "expreso"
+        ? "Es expreso porque las palabras del sujeto aparecen escritas: \u201c" + oracion.sujeto + "\u201d."
+        : "Es tácito porque el sujeto no aparece escrito; se sobreentiende por la terminación del verbo (\u201c" + oracion.nucleoPredicado + "\u201d).";
+      return pregunta;
+    }
+
+    if (tipoPregunta === "sujetoSimpleCompuesto"){
+      pregunta.texto = "¿El sujeto de esta oración es simple o compuesto?";
+      pregunta.correcta = oracion.sujetoNum === "simple" ? "Simple" : "Compuesto";
+      pregunta.opciones = mezclar(["Simple","Compuesto"]);
+      pregunta.explicacion = oracion.sujetoNum === "simple"
+        ? "Es simple porque tiene un solo núcleo: \u201c" + oracion.nucleoSujeto + "\u201d."
+        : "Es compuesto porque tiene dos o más núcleos unidos por \u201cy\u201d: \u201c" + oracion.nucleoSujeto + "\u201d.";
+      return pregunta;
+    }
+
+    if (tipoPregunta === "predicadoVerbalNoVerbal"){
+      pregunta.texto = "¿El predicado de esta oración es verbal o no verbal?";
+      pregunta.correcta = oracion.predicadoTipo === "verbal" ? "Verbal" : "No verbal";
+      pregunta.opciones = mezclar(["Verbal","No verbal"]);
+      pregunta.explicacion = oracion.predicadoTipo === "verbal"
+        ? "Es verbal porque su núcleo es un verbo conjugado: \u201c" + oracion.nucleoPredicado + "\u201d."
+        : "Es no verbal porque no tiene un verbo conjugado; solo describe o califica al sujeto: \u201c" + oracion.predicado + "\u201d.";
+      return pregunta;
+    }
+
+    // predicadoSimpleCompuesto
+    pregunta.texto = "¿El predicado de esta oración es simple o compuesto?";
+    pregunta.correcta = oracion.predicadoNum === "simple" ? "Simple" : "Compuesto";
+    pregunta.opciones = mezclar(["Simple","Compuesto"]);
+    pregunta.explicacion = oracion.predicadoNum === "simple"
+      ? "Es simple porque tiene un solo núcleo" + (oracion.nucleoPredicado ? " (\u201c" + oracion.nucleoPredicado + "\u201d)." : ".")
+      : "Es compuesto porque tiene dos verbos conjugados unidos por \u201cy\u201d: \u201c" + oracion.nucleoPredicado + "\u201d.";
+    return pregunta;
+  }
+
+  /* =========================================================
+     4. ESTADO Y LÓGICA DEL JUEGO
+  ========================================================== */
+
+  var TOTAL_PREGUNTAS = 10;
+  var estado = { preguntas: [], indice: 0, aciertos: 0, errores: [] };
+
+  var el = {
+    inicio: document.getElementById("pantalla-inicio"),
+    juego: document.getElementById("pantalla-juego"),
+    final: document.getElementById("pantalla-final"),
+    btnEmpezar: document.getElementById("btn-empezar"),
+    btnSiguiente: document.getElementById("btn-siguiente"),
+    btnReintentar: document.getElementById("btn-reintentar"),
+    txtCaso: document.getElementById("txt-caso"),
+    txtPuntos: document.getElementById("txt-puntos"),
+    barra: document.getElementById("barra-progreso"),
+    lblExpediente: document.getElementById("lbl-expediente"),
+    txtOracion: document.getElementById("txt-oracion"),
+    txtPregunta: document.getElementById("txt-pregunta"),
+    contOpciones: document.getElementById("cont-opciones"),
+    feedback: document.getElementById("feedback"),
+    stamp: document.getElementById("stamp"),
+    gradeStamp: document.getElementById("grade-stamp"),
+    gradeNum: document.getElementById("grade-num"),
+    gradeLbl: document.getElementById("grade-lbl"),
+    endMsg: document.getElementById("end-msg"),
+    contRevision: document.getElementById("cont-revision")
+  };
+
+  function iniciarPartida(){
+    var elegidas = mezclar(BANCO).slice(0, TOTAL_PREGUNTAS);
+    estado.preguntas = elegidas.map(generarPregunta);
+    estado.indice = 0;
+    estado.aciertos = 0;
+    estado.errores = [];
+
+    el.inicio.classList.add("hidden");
+    el.final.classList.add("hidden");
+    el.juego.classList.remove("hidden");
+
+    mostrarPregunta();
+  }
+
+  function mostrarPregunta(){
+    var n = estado.indice;
+    var p = estado.preguntas[n];
+
+    el.txtCaso.textContent = "Caso " + (n + 1) + " / " + TOTAL_PREGUNTAS;
+    el.txtPuntos.textContent = "Aciertos: " + estado.aciertos;
+    el.barra.style.width = Math.round((n / TOTAL_PREGUNTAS) * 100) + "%";
+    el.lblExpediente.textContent = "Expediente N° " + String(n + 1).padStart(3, "0");
+    el.txtOracion.textContent = p.oracion.texto;
+    el.txtPregunta.textContent = p.texto;
+
+    el.stamp.className = "stamp";
+    el.stamp.textContent = "";
+    el.feedback.className = "feedback";
+    el.feedback.innerHTML = "";
+    el.btnSiguiente.classList.remove("show");
+
+    el.contOpciones.innerHTML = "";
+    p.opciones.forEach(function(opcion){
+      var btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.type = "button";
+      btn.textContent = opcion;
+      btn.addEventListener("click", function(){ responder(opcion, btn); });
+      el.contOpciones.appendChild(btn);
+    });
+  }
+
+  function responder(opcionElegida, btnElegido){
+    var p = estado.preguntas[estado.indice];
+    var esCorrecta = opcionElegida === p.correcta;
+
+    var botones = el.contOpciones.querySelectorAll(".option-btn");
+    botones.forEach(function(b){
+      b.disabled = true;
+      if (b.textContent === p.correcta) b.classList.add("correct");
+      else if (b === btnElegido) b.classList.add("incorrect");
+    });
+
+    if (esCorrecta){
+      estado.aciertos++;
+      el.txtPuntos.textContent = "Aciertos: " + estado.aciertos;
+      el.stamp.textContent = "Correcto";
+      el.stamp.className = "stamp ok show";
+      el.feedback.className = "feedback ok show";
+      el.feedback.innerHTML = "<strong>¡Caso resuelto!</strong>" + p.explicacion;
+    } else {
+      estado.errores.push({
+        oracion: p.oracion.texto,
+        pregunta: p.texto,
+        correcta: p.correcta,
+        elegida: opcionElegida,
+        explicacion: p.explicacion
+      });
+      el.stamp.textContent = "Incorrecto";
+      el.stamp.className = "stamp bad show";
+      el.feedback.className = "feedback bad show";
+      el.feedback.innerHTML = "<strong>¡Ojo, detective!</strong>Marcaste \u201c" + opcionElegida + "\u201d, pero no es así. " + p.explicacion;
+    }
+
+    el.btnSiguiente.classList.add("show");
+    el.btnSiguiente.textContent = (estado.indice === TOTAL_PREGUNTAS - 1) ? "Cerrar expediente →" : "Siguiente pista →";
+  }
+
+  function siguiente(){
+    estado.indice++;
+    if (estado.indice >= TOTAL_PREGUNTAS){
+      mostrarFinal();
+    } else {
+      mostrarPregunta();
+    }
+  }
+
+  function mostrarFinal(){
+    el.barra.style.width = "100%";
+    el.juego.classList.add("hidden");
+    el.final.classList.remove("hidden");
+
+    var nota = estado.aciertos; // sobre 10
+    var aprobado = nota >= 7;
+
+    el.gradeNum.textContent = nota;
+    el.gradeLbl.textContent = aprobado ? "Aprobado" : "Desaprobado";
+    el.gradeStamp.className = "grade-stamp " + (aprobado ? "ok" : "bad");
+
+    if (nota === 10) el.endMsg.textContent = "¡Expediente perfecto! Sos un/a verdadero/a detective del idioma. 🕵️";
+    else if (aprobado) el.endMsg.textContent = "¡Buen trabajo! Resolviste el caso con nota " + nota + "/10.";
+    else el.endMsg.textContent = "Casi lo resolvés. Nota " + nota + "/10 — repasá las pistas y volvé a intentarlo.";
+
+    el.contRevision.innerHTML = "";
+    if (estado.errores.length === 0){
+      var ok = document.createElement("div");
+      ok.className = "no-errors";
+      ok.textContent = "No cometiste ningún error en esta investigación. ¡Excelente trabajo!";
+      el.contRevision.appendChild(ok);
+    } else {
+      var titulo = document.createElement("div");
+      titulo.className = "review-title";
+      titulo.textContent = "Pistas para repasar:";
+      el.contRevision.appendChild(titulo);
+
+      estado.errores.forEach(function(e){
+        var div = document.createElement("div");
+        div.className = "review-item";
+        div.innerHTML =
+          "<div class=\"rs\">\u201c" + e.oracion + "\u201d</div>" +
+          "<div class=\"rq\">" + e.pregunta + "</div>" +
+          "Marcaste \u201c" + e.elegida + "\u201d — la respuesta correcta era \u201c" + e.correcta + "\u201d. " + e.explicacion;
+        el.contRevision.appendChild(div);
+      });
+    }
+  }
+
+  el.btnEmpezar.addEventListener("click", iniciarPartida);
+  el.btnSiguiente.addEventListener("click", siguiente);
+  el.btnReintentar.addEventListener("click", iniciarPartida);
+
+})();
+</script>
+</body>
+</html>
